@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestFlow: The College Fest Manager</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light mode background */
+            color: #333; /* Light mode text color */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme change */
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6366f1; /* Indigo 500 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4f46e5; /* Indigo 600 */
+        }
+
+        /* Dark Mode Styles */
+        body.dark {
+            background-color: #1a202c; /* Dark mode background */
+            color: #e2e8f0; /* Dark mode text color */
+        }
+
+        body.dark .content-section,
+        body.dark .bg-white {
+            background-color: #2d3748; /* Darker background for main content cards */
+            color: #e2e8f0;
+        }
+
+        body.dark .bg-gray-50 {
+            background-color: #4a5568; /* Even darker background for nested cards (event, admin) */
+            color: #e2e8f0;
+            border-color: #4a5568; /* Adjust border color for dark mode */
+        }
+
+        body.dark .text-gray-700 {
+            color: #cbd5e0; /* Lighter gray for text in dark mode */
+        }
+
+        body.dark .text-gray-800 {
+            color: #f7fafc; /* Lighter text for headings in dark mode */
+        }
+
+        body.dark .text-gray-600 {
+            color: #a0aec0; /* Lighter gray for secondary text */
+        }
+
+        body.dark .text-indigo-700 {
+            color: #9f7aea; /* Lighter indigo for headings */
+        }
+
+        body.dark .text-indigo-600 {
+            color: #a78bfa; /* Lighter indigo for medium text */
+        }
+
+        body.dark .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2); /* Darker shadow */
+        }
+
+        body.dark input,
+        body.dark select,
+        body.dark textarea {
+            background-color: #4a5568; /* Darker input fields */
+            color: #e2e8f0;
+            border-color: #6366f1; /* Indigo border for inputs */
+        }
+
+        body.dark input::placeholder,
+        body.dark textarea::placeholder {
+            color: #cbd5e0; /* Lighter placeholder text */
+        }
+
+        body.dark .border-gray-200 {
+            border-color: #4a5568; /* Adjust border color for dark mode */
+        }
+
+        body.dark .bg-green-100 {
+            background-color: #2f855a; /* Darker green for ticket output */
+            border-color: #38a169;
+            color: #e2e8f0;
+        }
+
+        body.dark .text-green-700 {
+            color: #9ae6b4; /* Lighter green for success messages */
+        }
+
+        body.dark .bg-gray-600 {
+            background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for message box */
+        }
+
+        body.dark .bg-white {
+            background-color: #2d3748; /* Darker background for message box */
+        }
+
+        body.dark .bg-gray-100 {
+            background-color: #4a5568; /* Darker background for specific elements */
+        }
+
+        /* Adjust scrollbar for dark mode */
+        body.dark ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        body.dark ::-webkit-scrollbar-thumb {
+            background: #818cf8; /* Lighter indigo for dark mode scrollbar */
+        }
+        body.dark ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1;
+        }
+
+        /* Animation for banner */
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+        .animate-slide-down {
+            animation: slideDown 0.5s ease-out forwards;
+        }
+
+        /* Animation for content sections */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Global Notification Banner -->
+    <div id="notification-banner" class="hidden bg-yellow-500 text-white text-center p-3 font-semibold transition-all duration-500 ease-in-out">
+        📢 Important Update: Registrations for the 'Tech Innovate' workshop close in 2 hours!
+    </div>
+
+    <!-- Header and Navigation -->
+    <header class="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-3xl font-bold mb-2 md:mb-0">FestFlow 🎉</h1>
+            <nav class="flex items-center space-x-4 md:space-x-6 text-lg">
+                <ul class="flex flex-wrap justify-center space-x-4 md:space-x-6 text-lg">
+                    <li><button class="nav-link p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200" data-target="home">Home</button></li>
+                    <li><button class="nav-link p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200" data-target="schedule">Schedule</button></li>
+                    <li><button class="nav-link p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200" data-target="register">Register</button></li>
+                    <li><button class="nav-link p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200" data-target="gallery">Gallery</button></li>
+                    <li><button class="nav-link p-2 rounded-md hover:bg-indigo-700 transition-colors duration-200" data-target="admin">Admin Panel</button></li>
+                </ul>
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="p-2 rounded-full bg-indigo-500 hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                    <!-- Sun Icon (Light Mode) -->
+                    <svg id="sun-icon" class="w-6 h-6 text-yellow-300" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.459 4.577a1 1 0 01-1.39.057l-1.928-1.745a1 1 0 01.057-1.39 1 1 0 011.39-.057l1.928 1.745a1 1 0 01-.057 1.39zM10 18a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1zM4.541 14.423a1 1 0 01-.057-1.39l1.928-1.745a1 1 0 011.39.057 1 1 0 01-.057 1.39l-1.928 1.745zM16 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM3 10a1 1 0 01-1-1V9a1 1 0 112 0v1a1 1 0 01-1 1zM14.423 4.541a1 1 0 01.057 1.39l-1.745 1.928a1 1 0 01-1.39-.057 1 1 0 01.057-1.39l1.745-1.928zM5.577 4.541a1 1 0 011.39-.057l1.745 1.928a1 1 0 01-.057 1.39 1 1 0 01-1.39-.057L5.577 5.931z"></path>
+                    </svg>
+                    <!-- Moon Icon (Dark Mode) -->
+                    <svg id="moon-icon" class="w-6 h-6 text-gray-300 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow container mx-auto p-4 md:p-8">
+
+        <!-- Home Section -->
+        <section id="home" class="content-section bg-white p-6 md:p-10 rounded-xl shadow-lg mb-8 transition-all duration-300 ease-in-out">
+            <h2 class="text-4xl font-extrabold text-center text-indigo-700 mb-6">Welcome to FestFlow!</h2>
+            <p class="text-lg text-gray-700 leading-relaxed text-center max-w-3xl mx-auto">
+                Your ultimate companion for managing and experiencing the most exciting college fest of the year!
+                From real-time event updates to seamless online registrations, FestFlow brings all the chaos
+                under one roof, making your fest experience unforgettable. Get ready to dive into a world of
+                innovation, creativity, and fun!
+            </p>
+            <div class="mt-8 text-center">
+                <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out nav-link" data-target="schedule">
+                    Explore Events
+                </button>
+            </div>
+        </section>
+
+        <!-- Event Schedule Section -->
+        <section id="schedule" class="content-section hidden bg-white p-6 md:p-10 rounded-xl shadow-lg mb-8 transition-all duration-300 ease-in-out">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">Event Schedule</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Event Card 1 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Tech Innovate Hackathon</h3>
+                    <p class="text-indigo-600 font-medium mb-1">Date: Oct 26, 2025</p>
+                    <p class="text-gray-600 mb-3">Time: 10:00 AM - 6:00 PM</p>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        A 24-hour coding challenge where teams build innovative solutions to real-world problems.
+                        Prizes for the top 3 teams!
+                    </p>
+                    <button class="mt-4 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 nav-link" data-target="register" data-event-name="Tech Innovate Hackathon">Register Now</button>
+                </div>
+                <!-- Event Card 2 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Cultural Fiesta: Dance-Off</h3>
+                    <p class="text-indigo-600 font-medium mb-1">Date: Oct 27, 2025</p>
+                    <p class="text-gray-600 mb-3">Time: 07:00 PM - 10:00 PM</p>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        Showcase your moves in the ultimate dance battle! Solo and group performances welcome.
+                        Judges from the national dance circuit.
+                    </p>
+                    <button class="mt-4 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 nav-link" data-target="register" data-event-name="Cultural Fiesta: Dance-Off">Register Now</button>
+                </div>
+                <!-- Event Card 3 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Robo-War Championship</h3>
+                    <p class="text-indigo-600 font-medium mb-1">Date: Oct 28, 2025</p>
+                    <p class="text-gray-600 mb-3">Time: 02:00 PM - 05:00 PM</p>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        Witness the clash of titans! Robots designed by students battle it out for supremacy.
+                        Spectacular destruction guaranteed.
+                    </p>
+                    <button class="mt-4 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 nav-link" data-target="register" data-event-name="Robo-War Championship">Register Now</button>
+                </div>
+                <!-- Event Card 4 -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Art & Craft Exhibition</h3>
+                    <p class="text-indigo-600 font-medium mb-1">Date: Oct 26-28, 2025</p>
+                    <p class="text-gray-600 mb-3">Time: 11:00 AM - 06:00 PM (Daily)</p>
+                    <p class="text-gray-700 text-sm leading-relaxed">
+                        Explore a vibrant collection of paintings, sculptures, and handmade crafts by talented students.
+                        Vote for your favorite!
+                    </p>
+                    <button class="mt-4 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 nav-link" data-target="register" data-event-name="Art & Craft Exhibition">Register Now</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Registration and Ticketing Section -->
+        <section id="register" class="content-section hidden bg-white p-6 md:p-10 rounded-xl shadow-lg mb-8 transition-all duration-300 ease-in-out">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">Event Registration</h2>
+            <div class="max-w-md mx-auto">
+                <form id="registration-form" class="space-y-4">
+                    <div>
+                        <label for="eventName" class="block text-gray-700 text-sm font-bold mb-2">Event Name:</label>
+                        <select id="eventName" name="eventName" class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+                            <option value="">Select an Event</option>
+                            <option value="Tech Innovate Hackathon">Tech Innovate Hackathon</option>
+                            <option value="Cultural Fiesta: Dance-Off">Cultural Fiesta: Dance-Off</option>
+                            <option value="Robo-War Championship">Robo-War Championship</option>
+                            <option value="Art & Craft Exhibition">Art & Craft Exhibition</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="fullName" class="block text-gray-700 text-sm font-bold mb-2">Full Name:</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="Your Full Name" class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
+                        <input type="email" id="email" name="email" placeholder="your.email@example.com" class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" required>
+                    </div>
+                    <div>
+                        <label for="collegeId" class="block text-gray-700 text-sm font-bold mb-2">College ID (Optional):</label>
+                        <input type="text" id="collegeId" name="collegeId" placeholder="Your College ID" class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200">
+                    </div>
+                    <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-md shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out">
+                        Register & Get Ticket
+                    </button>
+                </form>
+
+                <div id="ticket-output" class="hidden mt-8 p-6 bg-green-100 rounded-lg border border-green-300 text-center">
+                    <h3 class="text-2xl font-semibold text-green-700 mb-4">Registration Successful!</h3>
+                    <p class="text-gray-800 mb-4">Your e-ticket has been generated. Please save this QR code.</p>
+                    <div id="qrcode-container" class="flex justify-center mb-4">
+                        <!-- QR Code will be generated here -->
+                    </div>
+                    <p class="text-sm text-gray-600">Event: <span id="output-event-name" class="font-medium"></span></p>
+                    <p class="text-sm text-gray-600">Name: <span id="output-full-name" class="font-medium"></span></p>
+                    <p class="text-sm text-gray-600">Email: <span id="output-email" class="font-medium"></span></p>
+                    <button id="copy-qr-data" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200">Copy Ticket Data</button>
+                </div>
+
+                <!-- Custom Message Box for alerts -->
+                <div id="message-box" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+                        <h3 id="message-box-title" class="text-xl font-bold mb-4 text-gray-800"></h3>
+                        <p id="message-box-content" class="text-gray-700 mb-6"></p>
+                        <button id="message-box-ok" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-5 rounded-md transition-colors duration-200">OK</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Gallery Section -->
+        <section id="gallery" class="content-section hidden bg-white p-6 md:p-10 rounded-xl shadow-lg mb-8 transition-all duration-300 ease-in-out">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">Fest Moments Gallery</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Placeholder Image 1 - CORRECTED SRC -->
+                <div class="rounded-lg overflow-hidden shadow-md hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out">
+                    <img src= "IMG20250226170709.jpg" alt="Red Bull Event" class="w-full h-48 object-cover">
+                    <div class="p-3 bg-gray-50">
+                        <p class="text-sm text-gray-700">Red Bull Event</p>
+                    </div>
+                </div>
+                <!-- Placeholder Image 2 -->
+                <div class="rounded-lg overflow-hidden shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <img src="https://tse3.mm.bing.net/th/id/OIP.JA68gzyVzzkcK3zKhP06MAAAAA?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Fest Moment 2" class="w-full h-48 object-cover">
+                    <div class="p-3 bg-gray-50">
+                        <p class="text-sm text-gray-700">Hackathon Finals</p>
+                    </div>
+                </div>
+                <!-- Placeholder Image 3 -->
+                <div class="rounded-lg overflow-hidden shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <img src="https://i.ytimg.com/vi/PMBMOu13tMc/maxresdefault.jpg" alt="Fest Moment 3" class="w-full h-48 object-cover">
+                    <div class="p-3 bg-gray-50">
+                        <p class="text-sm text-gray-700">Dance Performance</p>
+                    </div>
+                </div>
+                <!-- Placeholder Image 4 -->
+                <div class="rounded-lg overflow-hidden shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <img src="https://static.independent.co.uk/s3fs-public/thumbnails/image/2017/11/29/11/14414056-high-res-robot-wars-s3.jpg" alt="Fest Moment 4" class="w-full h-48 object-cover">
+                    <div class="p-3 bg-gray-50">
+                        <p class="text-sm text-gray-700">Robo-War Action</p>
+                    </div>
+                </div>
+                <!-- Placeholder Image 5 -->
+                <div class="rounded-lg overflow-hidden shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <img src="https://tse3.mm.bing.net/th/id/OIP.x0JXtcURJmSplH_Y0htV1wHaDg?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Fest Moment 5" class="w-full h-48 object-cover">
+                    <div class="p-3 bg-gray-50">
+                        <p class="text-sm text-gray-700">Art Exhibition</p>
+                    </div>
+                </div>
+                <!-- Placeholder Image 6 -->
+                <div class="rounded-lg overflow-hidden shadow-md hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                    <img src="https://xplane.com/wp-content/uploads/2020/05/XPL_Website_Events_Header-Photo-2.png" alt="Fest Moment 6" class="w-full h-48 object-cover">
+                    <div class="p-3 bg-gray-50">
+                        <p class="text-sm text-gray-700">Workshop Session</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admin Panel Section -->
+        <section id="admin" class="content-section hidden bg-white p-6 md:p-10 rounded-xl shadow-lg mb-8 transition-all duration-300 ease-in-out">
+            <h2 class="text-3xl font-bold text-indigo-700 mb-6 text-center">Admin Panel</h2>
+            <div class="max-w-xl mx-auto space-y-6">
+                <!-- Announcement Management -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Send Announcement</h3>
+                    <form id="announcement-form" class="space-y-4">
+                        <div>
+                            <label for="announcementText" class="block text-gray-700 text-sm font-bold mb-2">Announcement Message:</label>
+                            <textarea id="announcementText" rows="3" placeholder="Type your announcement here..." class="shadow appearance-none border rounded-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200" required></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-md shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out">
+                            Publish Announcement
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Simulated Registration List -->
+                <div class="bg-gray-50 p-6 rounded-lg shadow-md border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Registered Attendees (Simulated)</h3>
+                    <div id="registered-attendees" class="space-y-3 max-h-60 overflow-y-auto custom-scrollbar">
+                        <!-- Registered attendees will be listed here dynamically -->
+                        <p class="text-gray-600">No registrations yet. Register for an event!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white p-4 text-center mt-8">
+        <div class="container mx-auto">
+            <p>&copy; 2025 FestFlow. All rights reserved. Made with ❤️ by Keshav.</p>
+        </div>
+    </footer>
+
+    <!-- QR Code Library (Simulated for demonstration) -->
+    <!-- In a real application, you would use a library like qrcode.js or qrious -->
+    <!-- For this demo, we'll just generate a placeholder image -->
+    <script>
+        // Function to simulate QR code generation (generates a placeholder image)
+        function generateQRCode(data, elementId) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = ''; // Clear previous QR code
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(data)}`;
+            const img = document.createElement('img');
+            img.src = qrImageUrl;
+            img.alt = 'QR Code';
+            img.className = 'rounded-md shadow-md';
+            container.appendChild(img);
+        }
+
+        // Custom Message Box functions
+        function showMessageBox(title, content) {
+            document.getElementById('message-box-title').innerText = title;
+            document.getElementById('message-box-content').innerText = content;
+            document.getElementById('message-box').classList.remove('hidden');
+        }
+
+        function hideMessageBox() {
+            document.getElementById('message-box').classList.add('hidden');
+        }
+
+        document.getElementById('message-box-ok').addEventListener('click', hideMessageBox);
+
+        // --- Theme Toggle Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('theme-toggle');
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+            const body = document.body;
+
+            // Function to set dark mode
+            const enableDarkMode = () => {
+                body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            };
+
+            // Function to set light mode
+            const disableDarkMode = () => {
+                body.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            };
+
+            // Check for saved theme preference on load
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                enableDarkMode();
+            } else {
+                disableDarkMode(); // Default to light if no preference or 'light'
+            }
+
+            // Toggle theme on button click
+            themeToggle.addEventListener('click', () => {
+                if (body.classList.contains('dark')) {
+                    disableDarkMode();
+                } else {
+                    enableDarkMode();
+                }
+            });
+
+            // --- Navigation Logic ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            const notificationBanner = document.getElementById('notification-banner');
+
+            // Function to show a specific section and hide others
+            const showSection = (targetId) => {
+                contentSections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.classList.remove('hidden');
+                        section.classList.add('animate-fade-in'); // Add animation class
+                    } else {
+                        section.classList.add('hidden');
+                        section.classList.remove('animate-fade-in');
+                    }
+                });
+            };
+
+            // Event listeners for navigation buttons
+            navLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    const targetId = event.target.dataset.target;
+                    showSection(targetId);
+                });
+            });
+
+            // --- Registration Form Logic ---
+            const registrationForm = document.getElementById('registration-form');
+            const ticketOutput = document.getElementById('ticket-output');
+            const outputEventName = document.getElementById('output-event-name');
+            const outputFullName = document.getElementById('output-full-name');
+            const outputEmail = document.getElementById('output-email');
+            const copyQrDataButton = document.getElementById('copy-qr-data');
+            const registeredAttendeesList = document.getElementById('registered-attendees');
+
+            // Store registrations (simulated in memory)
+            let registrations = [];
+
+            // Function to update the displayed registration list in admin panel
+            const updateRegisteredAttendeesList = () => {
+                if (registrations.length === 0) {
+                    registeredAttendeesList.innerHTML = '<p class="text-gray-600">No registrations yet. Register for an event!</p>';
+                    return;
+                }
+                registeredAttendeesList.innerHTML = ''; // Clear existing list
+                registrations.forEach((reg, index) => {
+                    const attendeeDiv = document.createElement('div');
+                    attendeeDiv.className = 'bg-white p-3 rounded-md shadow-sm border border-gray-100 flex justify-between items-center';
+                    attendeeDiv.innerHTML = `
+                        <div>
+                            <p class="font-medium text-gray-800">${reg.fullName}</p>
+                            <p class="text-sm text-gray-600">${reg.eventName} - ${reg.email}</p>
+                        </div>
+                        <button data-index="${index}" class="delete-registration-btn bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1 px-3 rounded-full transition-colors duration-200">Delete</button>
+                    `;
+                    registeredAttendeesList.appendChild(attendeeDiv);
+                });
+
+                // Add event listeners for delete buttons
+                document.querySelectorAll('.delete-registration-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const indexToDelete = parseInt(event.target.dataset.index);
+                        registrations.splice(indexToDelete, 1); // Remove from array
+                        updateRegisteredAttendeesList(); // Re-render list
+                        showMessageBox('Success', 'Registration deleted successfully!');
+                    });
+                });
+            };
+
+            registrationForm.addEventListener('submit', (event) => {
+                event.preventDefault(); // Prevent default form submission
+
+                const eventName = document.getElementById('eventName').value;
+                const fullName = document.getElementById('fullName').value;
+                const email = document.getElementById('email').value;
+                const collegeId = document.getElementById('collegeId').value;
+
+                if (!eventName || !fullName || !email) {
+                    showMessageBox('Error', 'Please fill in all required fields (Event Name, Full Name, Email).');
+                    return;
+                }
+
+                // Simulate QR code data
+                const qrData = `Event: ${eventName}\nName: ${fullName}\nEmail: ${email}\nCollege ID: ${collegeId || 'N/A'}`;
+                generateQRCode(qrData, 'qrcode-container');
+
+                // Display ticket output
+                outputEventName.textContent = eventName;
+                outputFullName.textContent = fullName;
+                outputEmail.textContent = email;
+                ticketOutput.classList.remove('hidden');
+
+                // Add registration to simulated list
+                registrations.push({ eventName, fullName, email, collegeId });
+                updateRegisteredAttendeesList();
+
+                // Clear form
+                registrationForm.reset();
+                showMessageBox('Success', 'You have successfully registered! Your e-ticket is displayed below.');
+            });
+
+            // Copy QR Data to Clipboard
+            copyQrDataButton.addEventListener('click', () => {
+                const qrDataText = `Event: ${outputEventName.textContent}\nName: ${outputFullName.textContent}\nEmail: ${outputEmail.textContent}`;
+                const textArea = document.createElement("textarea");
+                textArea.value = qrDataText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showMessageBox('Copied!', 'Ticket data copied to clipboard.');
+                } catch (err) {
+                    showMessageBox('Error', 'Failed to copy text. Please copy manually.');
+                }
+                document.body.removeChild(textArea);
+            });
+
+            // Pre-fill event name if coming from schedule section
+            document.querySelectorAll('.nav-link[data-target="register"]').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const eventName = event.target.dataset.eventName;
+                    if (eventName) {
+                        document.getElementById('eventName').value = eventName;
+                    }
+                    ticketOutput.classList.add('hidden'); // Hide ticket output when navigating to register
+                });
+            });
+
+            // --- Admin Panel Logic ---
+            const announcementForm = document.getElementById('announcement-form');
+
+            announcementForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const announcementText = document.getElementById('announcementText').value;
+
+                if (announcementText.trim() === '') {
+                    showMessageBox('Error', 'Announcement message cannot be empty.');
+                    return;
+                }
+
+                // Simulate sending announcement by displaying it in the banner
+                notificationBanner.textContent = `📢 Admin Announcement: ${announcementText}`;
+                notificationBanner.classList.remove('hidden');
+                notificationBanner.classList.add('animate-slide-down'); // Add animation
+
+                // Hide after a few seconds
+                setTimeout(() => {
+                    notificationBanner.classList.add('hidden');
+                    notificationBanner.classList.remove('animate-slide-down');
+                }, 8000); // Announcement visible for 8 seconds
+
+                document.getElementById('announcementText').value = ''; // Clear textarea
+                showMessageBox('Success', 'Announcement published successfully!');
+            });
+
+            // Initial setup: Show home section
+            showSection('home');
+            updateRegisteredAttendeesList(); // Initialize empty list
+        });
+    </script>
+</body>
+</html>
